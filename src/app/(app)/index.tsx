@@ -15,6 +15,7 @@ import { Link, Stack } from 'expo-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { api, type ProductListItem } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { getInventoryStatus } from '@/lib/inventoryStatus';
 import { colors, shadows } from '@/constants/theme';
 
 const PAGE_SIZE = 20;
@@ -94,11 +95,6 @@ export default function ProductListScreen() {
 					{customerName ? `Xin chào, ${customerName}` : 'Tồn kho sản phẩm'}
 				</Text>
 				<View style={styles.customerMeta}>
-					{customer?.customer_code ? (
-						<Text style={styles.customerCode}>
-							Mã khách: {customer.customer_code}
-						</Text>
-					) : null}
 					<Text style={styles.updatedHint}>Kéo xuống để cập nhật dữ liệu</Text>
 				</View>
 			</View>
@@ -180,7 +176,9 @@ export default function ProductListScreen() {
 }
 
 function ProductRow({ item }: { item: ProductListItem }) {
-	const inStock = item.total_quantity > 0;
+	const inventoryStatus = getInventoryStatus(item.total_quantity);
+	const isOutOfStock = inventoryStatus.tone === 'out';
+	const isLowStock = inventoryStatus.tone === 'low';
 
 	return (
 		<Link href={`/product/${item.id}`} asChild>
@@ -201,32 +199,25 @@ function ProductRow({ item }: { item: ProductListItem }) {
 					<Text style={styles.productTitle} numberOfLines={2}>
 						{item.title}
 					</Text>
-					<Text
-						style={[
-							styles.stockStatus,
-							!inStock && styles.outOfStockStatus,
-						]}
-					>
-						{inStock ? 'Còn hàng' : 'Hết hàng'}
-					</Text>
 				</View>
 				<View
 					style={[
 						styles.quantityBox,
-						!inStock && styles.quantityBoxEmpty,
+						isLowStock && styles.quantityBoxLow,
+						isOutOfStock && styles.quantityBoxEmpty,
 					]}
 				>
 					<Text
 						style={[
 							styles.quantityValue,
-							!inStock && styles.quantityValueEmpty,
+							isLowStock && styles.quantityValueLow,
+							isOutOfStock && styles.quantityValueEmpty,
 						]}
 						numberOfLines={1}
 						adjustsFontSizeToFit
 					>
-						{item.total_quantity}
+						{inventoryStatus.label}
 					</Text>
-					<Text style={styles.quantityLabel}>tồn kho</Text>
 				</View>
 			</TouchableOpacity>
 		</Link>
@@ -285,15 +276,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		gap: 8,
 		marginTop: 9,
-	},
-	customerCode: {
-		color: colors.navySoft,
-		fontSize: 12,
-		fontWeight: '700',
-		backgroundColor: colors.background,
-		borderRadius: 6,
-		paddingHorizontal: 8,
-		paddingVertical: 4,
 	},
 	updatedHint: { color: colors.textMuted, fontSize: 12 },
 	searchSection: {
@@ -364,32 +346,26 @@ const styles = StyleSheet.create({
 		color: colors.text,
 		fontWeight: '700',
 	},
-	stockStatus: {
-		color: colors.success,
-		fontSize: 12,
-		fontWeight: '600',
-		marginTop: 6,
-	},
-	outOfStockStatus: { color: colors.danger },
 	quantityBox: {
-		width: 66,
-		minHeight: 60,
+		width: 82,
+		minHeight: 42,
 		justifyContent: 'center',
 		alignItems: 'center',
 		backgroundColor: colors.successBackground,
 		borderRadius: 8,
 		paddingHorizontal: 5,
 	},
+	quantityBoxLow: { backgroundColor: colors.background },
 	quantityBoxEmpty: { backgroundColor: colors.dangerBackground },
 	quantityValue: {
 		width: '100%',
 		color: colors.success,
-		fontSize: 22,
+		fontSize: 15,
 		fontWeight: '800',
 		textAlign: 'center',
 	},
+	quantityValueLow: { color: colors.tealDark },
 	quantityValueEmpty: { color: colors.danger },
-	quantityLabel: { color: colors.textMuted, fontSize: 10, marginTop: 1 },
 	centerState: {
 		flex: 1,
 		justifyContent: 'center',

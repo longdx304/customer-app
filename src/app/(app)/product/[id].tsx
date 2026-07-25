@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { api, type ProductVariantRow } from '@/lib/api';
+import { getInventoryStatus } from '@/lib/inventoryStatus';
 import { colors, shadows } from '@/constants/theme';
 
 export default function ProductDetailScreen() {
@@ -23,6 +24,11 @@ export default function ProductDetailScreen() {
 	});
 
 	const product = data?.product;
+	const inventoryStatus = product
+		? getInventoryStatus(product.total_quantity)
+		: null;
+	const isProductLowStock = inventoryStatus?.tone === 'low';
+	const isProductOutOfStock = inventoryStatus?.tone === 'out';
 
 	return (
 		<View style={styles.container}>
@@ -76,10 +82,11 @@ export default function ProductDetailScreen() {
 							<Text
 								style={[
 									styles.stockState,
-									product.total_quantity <= 0 && styles.outOfStockState,
+									isProductLowStock && styles.lowStockState,
+									isProductOutOfStock && styles.outOfStockState,
 								]}
 							>
-								{product.total_quantity > 0 ? 'Còn hàng' : 'Hết hàng'}
+								{inventoryStatus?.label}
 							</Text>
 						</View>
 					</View>
@@ -87,24 +94,24 @@ export default function ProductDetailScreen() {
 					<View
 						style={[
 							styles.totalSection,
-							product.total_quantity <= 0 && styles.totalSectionEmpty,
+							isProductLowStock && styles.totalSectionLow,
+							isProductOutOfStock && styles.totalSectionEmpty,
 						]}
 					>
 						<View>
-							<Text style={styles.totalLabel}>Tổng tồn kho hiện tại</Text>
-							<Text style={styles.totalHint}>
-								Tổng số lượng của tất cả phân loại
-							</Text>
+							<Text style={styles.totalLabel}>Tình trạng tồn kho</Text>
+							<Text style={styles.totalHint}>Dựa trên tất cả phân loại</Text>
 						</View>
 						<Text
 							style={[
 								styles.totalValue,
-								product.total_quantity <= 0 && styles.totalValueEmpty,
+								isProductLowStock && styles.totalValueLow,
+								isProductOutOfStock && styles.totalValueEmpty,
 							]}
 							numberOfLines={1}
 							adjustsFontSizeToFit
 						>
-							{product.total_quantity}
+							{inventoryStatus?.label}
 						</Text>
 					</View>
 
@@ -144,7 +151,9 @@ export default function ProductDetailScreen() {
 }
 
 function VariantRow({ variant }: { variant: ProductVariantRow }) {
-	const inStock = variant.total_quantity > 0;
+	const inventoryStatus = getInventoryStatus(variant.total_quantity);
+	const isLowStock = inventoryStatus.tone === 'low';
+	const isOutOfStock = inventoryStatus.tone === 'out';
 
 	return (
 		<View style={styles.variantCard}>
@@ -161,20 +170,21 @@ function VariantRow({ variant }: { variant: ProductVariantRow }) {
 			<View
 				style={[
 					styles.variantQuantity,
-					!inStock && styles.variantQuantityEmpty,
+					isLowStock && styles.variantQuantityLow,
+					isOutOfStock && styles.variantQuantityEmpty,
 				]}
 			>
 				<Text
 					style={[
 						styles.variantValue,
-						!inStock && styles.variantValueEmpty,
+						isLowStock && styles.variantValueLow,
+						isOutOfStock && styles.variantValueEmpty,
 					]}
 					numberOfLines={1}
 					adjustsFontSizeToFit
 				>
-					{variant.total_quantity}
+					{inventoryStatus.label}
 				</Text>
-				<Text style={styles.variantUnit}>{variant.unit ?? 'sản phẩm'}</Text>
 			</View>
 		</View>
 	);
@@ -234,6 +244,7 @@ const styles = StyleSheet.create({
 		fontWeight: '700',
 		marginTop: 9,
 	},
+	lowStockState: { color: colors.tealDark },
 	outOfStockState: { color: colors.danger },
 	totalSection: {
 		minHeight: 96,
@@ -251,15 +262,20 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.dangerBackground,
 		borderLeftColor: colors.danger,
 	},
+	totalSectionLow: {
+		backgroundColor: colors.background,
+		borderLeftColor: colors.tealDark,
+	},
 	totalLabel: { color: colors.text, fontSize: 15, fontWeight: '700' },
 	totalHint: { color: colors.textMuted, fontSize: 11, marginTop: 4 },
 	totalValue: {
-		maxWidth: 110,
+		maxWidth: 140,
 		color: colors.success,
-		fontSize: 36,
+		fontSize: 28,
 		fontWeight: '800',
 		textAlign: 'right',
 	},
+	totalValueLow: { color: colors.tealDark },
 	totalValueEmpty: { color: colors.danger },
 	descriptionSection: {
 		backgroundColor: colors.surface,
@@ -306,7 +322,7 @@ const styles = StyleSheet.create({
 	},
 	variantSku: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
 	variantQuantity: {
-		width: 78,
+		width: 86,
 		minHeight: 52,
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -314,21 +330,17 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		paddingHorizontal: 5,
 	},
+	variantQuantityLow: { backgroundColor: colors.background },
 	variantQuantityEmpty: { backgroundColor: colors.dangerBackground },
 	variantValue: {
 		width: '100%',
 		color: colors.success,
-		fontSize: 21,
+		fontSize: 15,
 		fontWeight: '800',
 		textAlign: 'center',
 	},
+	variantValueLow: { color: colors.tealDark },
 	variantValueEmpty: { color: colors.danger },
-	variantUnit: {
-		color: colors.textMuted,
-		fontSize: 10,
-		textAlign: 'center',
-		marginTop: 1,
-	},
 	emptyVariants: {
 		alignItems: 'center',
 		backgroundColor: colors.surface,
