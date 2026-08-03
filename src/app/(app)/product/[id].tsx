@@ -1,5 +1,6 @@
 import {
 	ActivityIndicator,
+	Modal,
 	RefreshControl,
 	ScrollView,
 	StyleSheet,
@@ -10,12 +11,15 @@ import {
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
 import { api, type ProductVariantRow } from '@/lib/api';
 import { getInventoryStatus } from '@/lib/inventoryStatus';
 import { colors, shadows } from '@/constants/theme';
 
 export default function ProductDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
+	const [isImageOpen, setIsImageOpen] = useState(false);
 
 	const { data, isLoading, isError, error, refetch, isRefetching } = useQuery({
 		queryKey: ['product', id],
@@ -33,6 +37,38 @@ export default function ProductDetailScreen() {
 	return (
 		<View style={styles.container}>
 			<Stack.Screen options={{ title: 'Chi tiết sản phẩm' }} />
+
+			<Modal
+				visible={isImageOpen}
+				transparent
+				animationType="fade"
+				statusBarTranslucent
+				onRequestClose={() => setIsImageOpen(false)}
+			>
+				<SafeAreaView style={styles.imageModal}>
+					<TouchableOpacity
+						style={styles.imageModalBackdrop}
+						activeOpacity={1}
+						onPress={() => setIsImageOpen(false)}
+						accessibilityRole="button"
+						accessibilityLabel="Đóng ảnh sản phẩm"
+					>
+						{product?.thumbnail ? (
+							<Image
+								source={{ uri: product.thumbnail }}
+								style={styles.fullscreenImage}
+								contentFit="contain"
+								transition={150}
+								accessibilityLabel={`Ảnh ${product.title}`}
+							/>
+						) : null}
+						<View style={styles.closeButton}>
+							<Text style={styles.closeButtonText}>✕</Text>
+						</View>
+						<Text style={styles.imageModalHint}>Chạm để đóng</Text>
+					</TouchableOpacity>
+				</SafeAreaView>
+			</Modal>
 
 			{isLoading ? (
 				<View style={styles.centerState}>
@@ -63,12 +99,22 @@ export default function ProductDetailScreen() {
 				>
 					<View style={styles.productHeader}>
 						{product.thumbnail ? (
-							<Image
-								source={{ uri: product.thumbnail }}
-								style={styles.productImage}
-								contentFit="cover"
-								transition={150}
-							/>
+							<TouchableOpacity
+								onPress={() => setIsImageOpen(true)}
+								activeOpacity={0.8}
+								accessibilityRole="button"
+								accessibilityLabel="Phóng to ảnh sản phẩm"
+							>
+								<Image
+									source={{ uri: product.thumbnail }}
+									style={styles.productImage}
+									contentFit="cover"
+									transition={150}
+								/>
+								<View style={styles.zoomBadge}>
+									<Text style={styles.zoomBadgeText}>＋</Text>
+								</View>
+							</TouchableOpacity>
 						) : (
 							<View style={[styles.productImage, styles.imagePlaceholder]}>
 								<Text style={styles.placeholderMark}>SYNA</Text>
@@ -215,6 +261,44 @@ const styles = StyleSheet.create({
 		height: 116,
 		borderRadius: 8,
 		backgroundColor: colors.surfaceMuted,
+	},
+	zoomBadge: {
+		position: 'absolute',
+		right: 6,
+		bottom: 6,
+		width: 26,
+		height: 26,
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderRadius: 13,
+		backgroundColor: 'rgba(0, 0, 0, 0.62)',
+	},
+	zoomBadgeText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
+	imageModal: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.96)' },
+	imageModalBackdrop: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingVertical: 56,
+	},
+	fullscreenImage: { flex: 1, width: '100%' },
+	closeButton: {
+		position: 'absolute',
+		top: 12,
+		right: 16,
+		width: 44,
+		height: 44,
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderRadius: 22,
+		backgroundColor: 'rgba(255, 255, 255, 0.16)',
+	},
+	closeButtonText: { color: '#FFFFFF', fontSize: 24, lineHeight: 28 },
+	imageModalHint: {
+		position: 'absolute',
+		bottom: 18,
+		color: '#FFFFFF',
+		fontSize: 13,
 	},
 	imagePlaceholder: {
 		justifyContent: 'center',
