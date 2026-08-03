@@ -3,6 +3,11 @@
 App đọc tồn kho cho khách hàng (iOS + Android + web), một codebase Expo + expo-router.
 Đăng nhập bằng **số điện thoại + mật khẩu**; tài khoản do nhân viên tạo trong admin.
 
+## Triển khai
+
+Xem hướng dẫn tối ưu chi phí cho Web, Android APK, iPhone TestFlight/Ad Hoc và
+Expo Go tại [DEPLOYMENT.md](./DEPLOYMENT.md).
+
 ## Cấu hình
 
 `.env`:
