@@ -179,7 +179,11 @@ export default function ProductDetailScreen() {
 						</View>
 
 						{product.variants.map((variant) => (
-							<VariantRow key={variant.id} variant={variant} />
+							<VariantRow
+								key={variant.id}
+								variant={variant}
+								fallbackImageUrl={product.thumbnail}
+							/>
 						))}
 						{product.variants.length === 0 ? (
 							<View style={styles.emptyVariants}>
@@ -196,23 +200,45 @@ export default function ProductDetailScreen() {
 	);
 }
 
-function VariantRow({ variant }: { variant: ProductVariantRow }) {
+function VariantRow({
+	variant,
+	fallbackImageUrl,
+}: {
+	variant: ProductVariantRow;
+	fallbackImageUrl: string | null;
+}) {
 	const inventoryStatus = getInventoryStatus(variant.total_quantity);
 	const isLowStock = inventoryStatus.tone === 'low';
 	const isOutOfStock = inventoryStatus.tone === 'out';
+	const imageUrl = variant.image_url ?? fallbackImageUrl;
 
 	return (
 		<View style={styles.variantCard}>
 			<View style={styles.variantBody}>
-				<Text style={styles.variantTitle}>
+				<Text style={styles.variantTitle} numberOfLines={2}>
 					{variant.title ?? 'Mặc định'}
 				</Text>
 				{variant.sku ? (
-					<Text style={styles.variantSku}>SKU: {variant.sku}</Text>
+					<Text style={styles.variantSku} numberOfLines={1}>
+						SKU: {variant.sku}
+					</Text>
 				) : (
 					<Text style={styles.variantSku}>Chưa có mã SKU</Text>
 				)}
 			</View>
+			{imageUrl ? (
+				<Image
+					source={{ uri: imageUrl }}
+					style={styles.variantImage}
+					contentFit="contain"
+					transition={150}
+					accessibilityLabel={`Ảnh phân loại ${variant.title ?? 'Mặc định'}`}
+				/>
+			) : (
+				<View style={[styles.variantImage, styles.variantImagePlaceholder]}>
+					<Text style={styles.variantPlaceholderMark}>SYNA</Text>
+				</View>
+			)}
 			<View
 				style={[
 					styles.variantQuantity,
@@ -328,7 +354,7 @@ const styles = StyleSheet.create({
 		fontWeight: '700',
 		marginTop: 9,
 	},
-	lowStockState: { color: colors.tealDark },
+	lowStockState: { color: colors.warning },
 	outOfStockState: { color: colors.danger },
 	totalSection: {
 		minHeight: 96,
@@ -347,8 +373,8 @@ const styles = StyleSheet.create({
 		borderLeftColor: colors.danger,
 	},
 	totalSectionLow: {
-		backgroundColor: colors.background,
-		borderLeftColor: colors.tealDark,
+		backgroundColor: colors.warningBackground,
+		borderLeftColor: colors.warning,
 	},
 	totalLabel: { color: colors.text, fontSize: 15, fontWeight: '700' },
 	totalHint: { color: colors.textMuted, fontSize: 11, marginTop: 4 },
@@ -359,7 +385,7 @@ const styles = StyleSheet.create({
 		fontWeight: '800',
 		textAlign: 'right',
 	},
-	totalValueLow: { color: colors.tealDark },
+	totalValueLow: { color: colors.warning },
 	totalValueEmpty: { color: colors.danger },
 	descriptionSection: {
 		backgroundColor: colors.surface,
@@ -397,7 +423,7 @@ const styles = StyleSheet.create({
 		marginBottom: 9,
 		...shadows.card,
 	},
-	variantBody: { flex: 1 },
+	variantBody: { flex: 1, minWidth: 0 },
 	variantTitle: {
 		color: colors.text,
 		fontSize: 15,
@@ -405,6 +431,23 @@ const styles = StyleSheet.create({
 		fontWeight: '700',
 	},
 	variantSku: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
+	variantImage: {
+		width: 58,
+		height: 58,
+		borderRadius: 7,
+		backgroundColor: colors.surfaceMuted,
+	},
+	variantImagePlaceholder: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderWidth: 1,
+		borderColor: colors.border,
+	},
+	variantPlaceholderMark: {
+		color: colors.textLight,
+		fontSize: 9,
+		fontWeight: '800',
+	},
 	variantQuantity: {
 		width: 86,
 		minHeight: 52,
@@ -414,7 +457,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		paddingHorizontal: 5,
 	},
-	variantQuantityLow: { backgroundColor: colors.background },
+	variantQuantityLow: { backgroundColor: colors.warningBackground },
 	variantQuantityEmpty: { backgroundColor: colors.dangerBackground },
 	variantValue: {
 		width: '100%',
@@ -423,7 +466,7 @@ const styles = StyleSheet.create({
 		fontWeight: '800',
 		textAlign: 'center',
 	},
-	variantValueLow: { color: colors.tealDark },
+	variantValueLow: { color: colors.warning },
 	variantValueEmpty: { color: colors.danger },
 	emptyVariants: {
 		alignItems: 'center',

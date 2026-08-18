@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		paddingHorizontal: 5,
 	},
-	quantityBoxLow: { backgroundColor: colors.background },
+	quantityBoxLow: { backgroundColor: colors.warningBackground },
 	quantityBoxEmpty: { backgroundColor: colors.dangerBackground },
 	quantityValue: {
 		width: '100%',
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
 		fontWeight: '800',
 		textAlign: 'center',
 	},
-	quantityValueLow: { color: colors.tealDark },
+	quantityValueLow: { color: colors.warning },
 	quantityValueEmpty: { color: colors.danger },
 	centerState: {
 		flex: 1,

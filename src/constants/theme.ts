@@ -12,6 +12,8 @@ export const colors = {
 	textLight: '#8A99A3',
 	success: '#147D5A',
 	successBackground: '#E8F6EF',
+	warning: '#9A4D00',
+	warningBackground: '#FFF3E0',
 	danger: '#B54747',
 	dangerBackground: '#FDECEC',
 };

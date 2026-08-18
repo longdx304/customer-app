@@ -93,6 +93,7 @@ export type ProductVariantRow = {
 	id: string;
 	sku: string | null;
 	title: string | null;
+	image_url: string | null;
 	total_quantity: number;
 	unit: string | null;
 };
