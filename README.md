@@ -59,3 +59,7 @@ src/
 
 Endpoint backend dùng: `POST /store/customer-inventory/auth/token`, `GET /store/customer-inventory/auth/me`,
 `GET /store/customer-inventory/products`, `GET /store/customer-inventory/products/:id`.
+
+## Phát hành lên store
+
+Xem [Hướng dẫn A–Z App Store và Google Play](./STORE-PUBLISHING.md): kiểm tra tài khoản và quyền, cấu hình EAS, build, TestFlight/closed testing, gửi duyệt, phát hành và cập nhật phiên bản.

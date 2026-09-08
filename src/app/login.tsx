@@ -11,11 +11,12 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { Redirect, useRouter } from 'expo-router';
+import { Link, Redirect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api';
 import { BrandLogo } from '@/components/brand-logo';
+import { SupportLinks } from '@/components/support-links';
 import { colors } from '@/constants/theme';
 
 export default function LoginScreen() {
@@ -145,9 +146,14 @@ export default function LoginScreen() {
 							)}
 						</TouchableOpacity>
 
-						<Text style={styles.hint}>
-							Cần hỗ trợ tài khoản? Vui lòng liên hệ nhân viên phụ trách.
-						</Text>
+						<View style={styles.support}>
+							<SupportLinks />
+							<Link href="/privacy" asChild>
+								<Pressable accessibilityRole="link" style={styles.privacyLink}>
+									<Text style={styles.privacyText}>Chính sách quyền riêng tư</Text>
+								</Pressable>
+							</Link>
+						</View>
 					</View>
 				</ScrollView>
 			</KeyboardAvoidingView>
@@ -269,11 +275,7 @@ const styles = StyleSheet.create({
 	},
 	buttonDisabled: { opacity: 0.6 },
 	buttonText: { color: colors.surface, fontSize: 16, fontWeight: '700' },
-	hint: {
-		color: colors.textMuted,
-		fontSize: 13,
-		lineHeight: 19,
-		textAlign: 'center',
-		marginTop: 18,
-	},
+	support: { marginTop: 20 },
+	privacyLink: { minHeight: 44, justifyContent: 'center', alignItems: 'center', paddingVertical: 10 },
+	privacyText: { color: colors.tealDark, fontSize: 14, textDecorationLine: 'underline' },
 });
